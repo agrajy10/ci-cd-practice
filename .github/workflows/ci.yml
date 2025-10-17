@@ -14,3 +14,14 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Build react app
+        run: npm run build
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: react-build
+          path: |
+            build
+            dist
