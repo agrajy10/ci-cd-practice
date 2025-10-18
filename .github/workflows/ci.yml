@@ -25,7 +25,22 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Deploy to S3
+      - name: Copy build folder to EC2
         run: |
-          if [ -d "build" ]; then aws s3 sync build s3://${{ secrets.S3_BUCKET }} --delete; fi
-          if [ -d "dist" ]; then aws s3 sync dist s3://${{ secrets.S3_BUCKET }} --delete; fi
+          echo "Transferring build files to EC2..."
+          scp -i ~/.ssh/ec2_key.pem -r dist ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/
+
+      - name: Move files into web directory
+        run: |
+          echo "Moving files to /var/www/myapp on EC2..."
+          ssh -i ~/.ssh/ec2_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "
+            sudo rm -rf /var/www/myapp/* &&
+            sudo mv /tmp/dist/* /var/www/myapp/
+          "
+
+      - name: Restart Nginx on EC2
+        run: |
+          echo "Restarting Nginx..."
+          ssh -i ~/.ssh/ec2_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "
+            sudo systemctl restart nginx
+          "
