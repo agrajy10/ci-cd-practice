@@ -27,5 +27,5 @@ jobs:
 
       - name: Deploy to S3
         run: |
-          aws s3 sync build s3://${{ secrets.S3_BUCKET }} --delete
-          aws s3 sync dist s3://${{ secrets.S3_BUCKET }} --delete
+          if [ -d "build" ]; then aws s3 sync build s3://${{ secrets.S3_BUCKET }} --delete; fi
+          if [ -d "dist" ]; then aws s3 sync dist s3://${{ secrets.S3_BUCKET }} --delete; fi
